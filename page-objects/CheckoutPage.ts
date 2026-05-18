@@ -66,15 +66,15 @@ export class CheckoutPage {
     await this.page.locator('[placeholder*="security"], input[id*="cvv"]').fill('123');
   }
 
-  async applyDiscountCode(code: string) {
-    const toggle = this.page.locator('button:has-text("Discount code"), a:has-text("discount")');
-    if (await toggle.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await toggle.click();
-    }
-    await this.page.locator('#checkout_reduction_code, input[name*="discount"]').fill(code);
-    await this.page.locator('button:has-text("Apply")').click();
-    await this.page.waitForTimeout(1000);
-  }
+async applyDiscountCode(code: string) {
+  await this.page
+    .getByRole('textbox', { name: 'Discount code or gift card' })
+    .fill(code);
+  await this.page
+    .getByRole('button', { name: 'Apply Discount Code' })
+    .click();
+  await this.page.waitForTimeout(1000);
+}
 
   async getDiscountError(): Promise<string> {
     const err = this.page.locator('.reduction-code__error, [class*="discount-error"]');
