@@ -12,8 +12,10 @@ export class ProductPage {
     }
 
     async addToCart() {
-    await this.page.getByRole('button', { name: 'Add to cart' }).click();
-    await this.page.waitForTimeout(1000);
+    await Promise.all([
+        this.page.waitForResponse(r => r.url().includes('/cart/add') && r.status() === 200),
+        this.page.getByRole('button', { name: 'Add to cart' }).click(),
+    ]);
     }
 
     async getPrice(): Promise<string> {

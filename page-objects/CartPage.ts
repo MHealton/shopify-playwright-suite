@@ -18,12 +18,12 @@ export class CartPage {
     }
 
     async applyDiscountCode(code: string) {
-        // Discount input lives in cart on some themes, checkout on others
-        // Dawn theme has it in cart
         const input = this.page.locator('[name="discount"], #discount-code, input[placeholder*="iscount"]');
         await input.fill(code);
-        await this.page.locator('button:has-text("Apply")').click();
-        await this.page.waitForTimeout(1000);
+        await Promise.all([
+            this.page.waitForResponse(r => r.url().includes('/cart') && r.status() === 200).catch(() => {}),
+            this.page.locator('button:has-text("Apply")').click(),
+        ]);
     }
 
     async getDiscountMessage(): Promise<string> {
@@ -43,14 +43,16 @@ export class CartPage {
         const row = this.page.locator(`[class*="cart-item"]:has-text("${productTitle}")`);
         const input = row.locator('input[type="number"], input[name*="quantity"]');
         await input.fill(String(quantity));
-        await input.press('Enter');
-        await this.page.waitForTimeout(1000);
+        await Promise.all([
+            this.page.waitForResponse(r => r.url().includes('/cart') && r.status() === 200),
+            input.press('Enter'),
+        ]);
     }
 
     async removeItem(productTitle: string) {
         const row = this.page.locator(`[class*="cart-item"]:has-text("${productTitle}")`);
         await row.locator('a:has-text("Remove"), button:has-text("Remove")').click();
-        await this.page.waitForTimeout(1000);
+        await row.waitFor({ state: 'hidden' });
     }
 
     async clearCart() {

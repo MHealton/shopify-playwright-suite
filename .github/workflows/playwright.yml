@@ -19,6 +19,15 @@ jobs:
       run: npx playwright install --with-deps
     - name: Run Playwright tests
       run: npx playwright test
+      env:
+        SHOPIFY_STORE_URL: ${{ secrets.SHOPIFY_STORE_URL }}
+        SHOPIFY_STORE_PASSWORD: ${{ secrets.SHOPIFY_STORE_PASSWORD }}
+        SHOPIFY_CLIENT_ID: ${{ secrets.SHOPIFY_CLIENT_ID }}
+        SHOPIFY_CLIENT_SECRET: ${{ secrets.SHOPIFY_CLIENT_SECRET }}
+        TEST_USER_1_EMAIL: ${{ secrets.TEST_USER_1_EMAIL }}
+        TEST_USER_1_PASSWORD: ${{ secrets.TEST_USER_1_PASSWORD }}
+        TEST_USER_2_EMAIL: ${{ secrets.TEST_USER_2_EMAIL }}
+        TEST_USER_2_PASSWORD: ${{ secrets.TEST_USER_2_PASSWORD }}
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
