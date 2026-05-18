@@ -20,16 +20,22 @@ export class CheckoutPage {
     zip: string;
     country?: string;
   }) {
-    await this.page.locator('#shipping-address1, input[name="address1"]').fill(address.address1);
-    await this.page.locator('#shipping-city, input[name="city"]').fill(address.city);
-    await this.page.locator('input[name="first_name"]').fill(address.firstName);
-    await this.page.locator('input[name="last_name"]').fill(address.lastName);
-    await this.page.locator('input[name="zip"]').fill(address.zip);
+    await this.page.getByRole('textbox', { name: 'First name' }).fill(address.firstName);
+    await this.page.getByRole('textbox', { name: 'Last name' }).fill(address.lastName);
+    await this.page.getByRole('combobox', { name: 'Address' }).fill(address.address1);
+    await this.page.getByRole('textbox', { name: 'City' }).fill(address.city);
+    await this.page.getByRole('textbox', { name: 'ZIP code' }).fill(address.zip);
 
-    // State/province is usually a select
-    const stateSelect = this.page.locator('select[name="province"]');
+    const stateSelect = this.page.getByRole('combobox', { name: 'State' });
     if (await stateSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
       await stateSelect.selectOption({ label: address.state });
+    }
+
+    if (address.country) {
+      const countrySelect = this.page.getByRole('combobox', { name: 'Country/Region' });
+      if (await countrySelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await countrySelect.selectOption({ label: address.country });
+      }
     }
   }
 
@@ -73,12 +79,15 @@ async applyDiscountCode(code: string) {
   await this.page
     .getByRole('button', { name: 'Apply Discount Code' })
     .click();
-  await this.page.waitForTimeout(1000);
+  await Promise.race([
+    this.page.getByText(/Enter a valid discount code/i).first().waitFor({ timeout: 5000 }).catch(() => undefined),
+    this.page.getByText(/Discount code applied/i).first().waitFor({ timeout: 5000 }).catch(() => undefined),
+  ]);
 }
 
   async getDiscountError(): Promise<string> {
-    const err = this.page.locator('.reduction-code__error, [class*="discount-error"]');
-    if (await err.isVisible({ timeout: 3000 }).catch(() => false)) {
+    const err = this.page.getByText(/Enter a valid discount code/i).first();
+    if (await err.isVisible({ timeout: 5000 }).catch(() => false)) {
       return err.innerText();
     }
     return '';
